@@ -1,0 +1,34 @@
+{
+"categories": {
+  "rod": {"name": "Rody", "intro": "Der Löffel, die Gabel, das Messer. Rody se bohužel nedají odvodit, dají se jen naposlouchat."},
+  "pomnozna": {"name": "Pomnožná jména", "intro": "Brýle, nůžky, kalhoty, dveře. Česky je jich víc, německy je to jen jedna věc."},
+  "vazby": {"name": "Vazby sloves", "intro": "Zavolat komu, ale jemanden anrufen. Tady čeština nejčastěji šeptá špatné rady."},
+  "predlozky": {"name": "Předložky a pády", "intro": "Kam, nebo kde? Na tom visí den a dem."},
+  "adjektiva": {"name": "Koncovky přídavných jmen", "intro": "Einen neuen, einem neuen, ein neues. Ucho si to pamatuje líp než tabulka."},
+  "slaba": {"name": "Slabá podstatná jména", "intro": "Den Kollegen, dem Nachbarn, Herrn Müller. To malé -n se v rychlé řeči ztrácí nejsnáz."},
+  "perfekt": {"name": "Perfektum: sein, nebo haben", "intro": "Ich bin gefahren, ich habe das Auto gefahren. Drobnost, která prozradí cizince."},
+  "casy": {"name": "Seit, als, wenn, ob", "intro": "Jestli, když, až, od té doby. Čeština má jednu spojku, němčina tři."},
+  "slovosled": {"name": "Slovosled a negace", "intro": "Sloveso na druhém místě, ve vedlejší větě na konci. A kein tam, kde se čeština spokojí s ne."},
+  "zvratna": {"name": "Zvratná slovesa", "intro": "Učit se, ale lernen. Poděkovat, ale sich bedanken. A mir, nebo mich?"},
+  "pratele": {"name": "Falešní přátelé a kalky", "intro": "Termín, mapa, krám. Slova, která znějí povědomě a přesto lžou."},
+  "cz": {"name": "Česká past", "intro": "Napříč kategoriemi: místa, kde člověka zradí doslovný překlad z češtiny."}
+},
+"greet": {
+  "morning": ["Guten Morgen! Kafe už máš? Já jsem u druhého.", "Dobré ráno. Ranní ucho je nejlepší ucho, pojďme na to.", "Guten Morgen! Než se rozjede den, dáme pár vět."],
+  "day": ["Servus! Rád tě vidím. Dáme pár vět?", "Grüß dich! Krátká lekce do polední pauzy se vždycky vejde.", "Tag! Já tu zrovna řešil, jestli der, nebo das Joghurt. Obojí jde, představ si."],
+  "evening": ["Guten Abend! Jedna lekce na dobrou noc?", "Dobrý večer. Večer se nejlíp poslouchá, nikdo neruší.", "Na, noch fleißig? Tak ještě pár vět a pak už jen gemütlich."]
+},
+"right": ["Genau!", "Sehr schön.", "Prima!", "Ausgezeichnet.", "Tak, přesně tak.", "Na bitte!", "Wunderbar.", "Bravo.", "Ano, tohle sedí.", "Perfekt."],
+"wrong": ["Ach, to je zrádné.", "Tady se chytá skoro každý.", "Nevadí, k téhle se ještě vrátíme.", "Hm, čeština nám tu napovídá špatně.", "Na ja, i já jsem se tu dlouho pletl.", "Tohle si zapamatujeme příště.", "Skoro. Podívej se na to podtržené."],
+"almost": ["Skoro dokonalé, jen drobnost.", "Zbytek sedí, chybička je jen v jednom slově."],
+"retry": ["Ještě jednou to, co minule zaskřípalo.", "Zopakujme si tu zrádnou."],
+"lessonStart": ["Tak, pojďme. Poslouchej pozorně koncovky.", "Los geht's! Dvanáct úloh, žádný stres.", "Nasaď si sluchátka, ať slyšíš i to malé -n."],
+"lessonEnd": {
+  "great": ["Výborně, tohle byla skoro bezchybná lekce. Ich bin stolz auf dich.", "Na also! Takhle by to šlo každý den."],
+  "good": ["Dobrá práce. Pár věcí ještě skřípe, ale to je normální.", "Pěkné. Ty zrádné věty ti brzy vrátím."],
+  "meh": ["Dneska to drhlo, ale na tom nezáleží. Právě tyhle věty se nejvíc vyplatí opakovat.", "Nic si z toho nedělej, i Goethe měl horší dny."]
+},
+"streak": ["Už {n} dní v řadě. Respekt.", "{n} dní v kuse! Tak se to dělá.", "Série {n} dní. Jen tak dál."],
+"goalDone": ["Denní cíl splněn. Zasloužíš si kafe.", "Dnešek máš splněný. Klidně můžeš pokračovat, já mám čas."],
+"empty": ["Všechno, co jsem pro tebe měl, je zopakované. Přijď zítra, nebo si vyber kategorii."]
+}
