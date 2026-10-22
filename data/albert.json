@@ -10,7 +10,7 @@
   "casy": {"name": "Seit, als, wenn, ob", "intro": "Jestli, když, až, od té doby. Čeština má jednu spojku, němčina tři."},
   "slovosled": {"name": "Slovosled a negace", "intro": "Sloveso na druhém místě, ve vedlejší větě na konci. A kein tam, kde se čeština spokojí s ne."},
   "zvratna": {"name": "Zvratná slovesa", "intro": "Učit se, ale lernen. Poděkovat, ale sich bedanken. A mir, nebo mich?"},
-  "pratele": {"name": "Falešní přátelé a kalky", "intro": "Termín, mapa, krám. Slova, která znějí povědomě a přesto lžou."},
+  "pratele": {"name": "Zrádná slova a doslovné překlady", "intro": "Termín, mapa, krám – slova, která znějí povědomě a přesto lžou. A obraty, které česky sedí, ale německy se tak neříká."},
   "cz": {"name": "Česká past", "intro": "Napříč kategoriemi: místa, kde člověka zradí doslovný překlad z češtiny."}
 },
 "greet": {
