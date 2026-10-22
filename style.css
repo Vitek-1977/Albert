@@ -171,7 +171,19 @@ h2 { font-family: var(--serif); font-weight: 600; font-size: 21px; margin: 0 0 4
 .pair-label { font-weight: 700; color: var(--muted); }
 .pair-text { font-size: 18px; }
 
-/* diktát */
+/* poskládej větu */
+.build { min-height: 112px; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 8px; padding: 12px 0 14px;
+  background: repeating-linear-gradient(transparent 0 51px, var(--line) 51px 53px); margin-bottom: 18px; }
+.build-empty { color: var(--muted); font-family: var(--sans); font-size: 15px; padding: 10px 2px; }
+.build .tile.is-right { border-color: var(--ok); color: var(--ok); }
+.build .tile.is-wrong { border-color: var(--red-pen); color: var(--red-pen); background: var(--bad-bg); }
+.bank { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 20px; }
+.tile { font-family: var(--serif); font-size: 19px; color: var(--ink-blue); background: var(--surface); border: 2px solid var(--line);
+  border-radius: 10px; padding: 6px 12px; min-height: 44px; box-shadow: 0 2px 0 var(--line); }
+.tile:active:not(:disabled) { transform: translateY(2px); box-shadow: none; }
+.tile.ghost { color: transparent; background: var(--line); box-shadow: none; }
+.hint.lead { margin: 0 0 16px; }
+/* diktát (starý) */
 .dict { width: 100%; font-size: 20px; padding: 12px 14px; border-radius: var(--radius-s); border: 2px solid var(--line); background: var(--surface); resize: none; }
 .dict:focus { outline: none; border-color: var(--ink-blue); }
 .umlauts { display: flex; gap: 6px; margin: 8px 0 14px; }

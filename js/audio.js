@@ -33,6 +33,7 @@ el.addEventListener('ended', () => {
 });
 
 function next() {
+  if (!queue.length) return;
   const { text, tag } = queue.shift();
   const u = urlFor(text);
   if (!u) { onState(false, tag); return; }

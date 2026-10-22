@@ -145,8 +145,7 @@ function showTask() {
     root.querySelectorAll('[data-play]').forEach(b => b.classList.toggle('playing', on));
     root.querySelectorAll('.pair-card').forEach(c => c.classList.toggle('playing', on && c.dataset.k === tag));
   });
-  if (it.type !== 'gender') ctx.play();
-  if (it.type === 'dictation') setTimeout(() => root.querySelector('textarea')?.focus(), 50);
+  if (it.type !== 'gender' && it.type !== 'errorhunt') ctx.play();
 }
 
 function answer(it, retry, res) {
@@ -169,6 +168,7 @@ function answer(it, retry, res) {
     </div>`;
   sheet.hidden = false;
   requestAnimationFrame(() => sheet.classList.add('up'));
+  if (it.type === 'errorhunt') $('#again').hidden = true;
   $('#again').onclick = () => audio.play(it.type === 'pair' ? [it[it.answer]] : spoken(it).filter(t => typeof t === 'string'));
   $('#flag').onclick = () => flagItem(it);
   $('#next').onclick = () => {

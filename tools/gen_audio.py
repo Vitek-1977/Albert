@@ -25,6 +25,8 @@ def texts_for(item):
     t = item["type"]
     if t == "gap":
         return [(item["de"].replace("{", "").replace("}", ""), item["id"])]
+    if t == "errorhunt":
+        return []  # hledání chyby je bez zvuku
     if t == "pair":
         return [(item["a"], item["id"]), (item["b"], item["id"])]
     return [(item["de"], item["id"])]

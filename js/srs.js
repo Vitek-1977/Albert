@@ -4,7 +4,7 @@ import { get, recordTag, tagAccuracy } from './storage.js';
 const DAY = 86400000;
 const INTERVALS = [0, 1, 3, 7, 16, 35, 90]; // dny podle krabičky
 export const LESSON_SIZE = 12;
-const MAX_DICTATION = 2;
+const MAX_DICTATION = 3;
 
 export function mainTag(item) { return item.tags[0]; }
 

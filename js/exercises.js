@@ -7,6 +7,7 @@ export const spoken = item => {
   switch (item.type) {
     case 'gap': return [item.de.replace(/[{}]/g, '')];
     case 'pair': return [{ text: item.a, tag: 'a' }, { text: item.b, tag: 'b' }];
+    case 'errorhunt': return []; // hlas by větu přečetl správně, takže jen čtení
     default: return [item.de];
   }
 };
@@ -15,7 +16,7 @@ export const TYPE_LABEL = {
   gap: 'Poslouchej a doplň',
   errorhunt: 'Najdi chybu',
   pair: 'Dvě věty',
-  dictation: 'Diktát',
+  dictation: 'Poskládej větu',
   gender: 'Jaký rod?',
 };
 
@@ -63,7 +64,7 @@ function gender(item, root, ctx) {
 function errorhunt(item, root, ctx) {
   const words = item.de.split(' ');
   root.innerHTML = `
-    <div class="listen-row">${playBtn()}<span class="hint">Je ve větě chyba? Ťukni na chybné slovo.</span></div>
+    <p class="hint lead">Je ve větě chyba? Ťukni na chybné slovo.</p>
     <p class="de sentence words">${words.map((w, i) => `<button class="word" data-i="${i}">${esc(w)}</button>`).join(' ')}</p>
     <button class="opt wide" data-ok>Věta je správně</button>`;
   const finish = (ok, given, btn) => {
@@ -127,29 +128,78 @@ export function diffWords(target, given) {
   return { okA, okB, perfect: okA.every(Boolean) && okB.every(Boolean) && n === m };
 }
 
+/* ---------- Poskládej větu ---------- */
+// zrádné varianty: ke slovům ve větě se přidají jejich „sourozenci“ (den/dem, einen/einem, mich/mir…)
+const ALT = {
+  der: ['dem', 'den'], die: ['der', 'den'], das: ['dem', 'den'], den: ['dem'], dem: ['den'], des: ['dem'],
+  mich: ['mir'], mir: ['mich'], dich: ['dir'], dir: ['dich'], ihn: ['ihm'], ihm: ['ihn'],
+  dass: ['das'], im: ['in'], in: ['im'], am: ['an'], an: ['am'], zum: ['zur'], zur: ['zum'], vom: ['von'], beim: ['bei'], bei: ['beim'],
+};
+const STEMS = ['ein', 'kein', 'mein', 'dein', 'sein', 'ihr', 'unser', 'dies', 'jed', 'welch'];
+const ENDING_ALT = { '': ['en', 'e'], e: ['er', 'en'], en: ['em'], em: ['en'], er: ['e', 'en'], es: ['em'] };
+
+function altsFor(word) {
+  const low = word.toLowerCase();
+  let alts = ALT[low];
+  if (!alts) {
+    for (const st of STEMS) {
+      if (low.startsWith(st)) {
+        const end = low.slice(st.length);
+        if (end in ENDING_ALT && !(st === 'sein' && end === '')) { alts = ENDING_ALT[end].map(e => st + e); break; }
+      }
+    }
+  }
+  if (!alts) return [];
+  const cap = word[0] !== word[0].toLowerCase();
+  return alts.map(a => cap ? a[0].toUpperCase() + a.slice(1) : a);
+}
+
+export const sentenceTiles = de => de.split(/\s+/).map(strip).filter(Boolean);
+
+export function distractors(item, max = 4) {
+  const words = sentenceTiles(item.de);
+  const out = [];
+  const add = w => { if (w && !words.includes(w) && !out.includes(w)) out.push(w); };
+  (item.distractors || []).forEach(add);
+  const auto = shuffle(words.flatMap(w => altsFor(w).slice(0, 1)));
+  for (const w of auto) { if (out.length >= max) break; add(w); }
+  return out.slice(0, Math.max(max, (item.distractors || []).length));
+}
+
 function dictation(item, root, ctx) {
+  const target = sentenceTiles(item.de);
+  const tiles = shuffle([...target, ...distractors(item)]).map((w, i) => ({ w, i, used: false }));
+  const chosen = [];
   root.innerHTML = `
-    <div class="listen-row">${playBtn()}<span class="hint">Napiš celou větu, kterou slyšíš.</span></div>
-    <textarea class="de dict" rows="3" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" lang="de" placeholder="Sem piš…"></textarea>
-    <div class="umlauts">${['ä', 'ö', 'ü', 'ß', 'Ä', 'Ö', 'Ü'].map(c => `<button class="uml" data-c="${c}">${c}</button>`).join('')}</div>
+    <div class="listen-row">${playBtn()}<span class="hint">Poskládej větu, kterou slyšíš. Pozor, některá slova jsou navíc.</span></div>
+    <div class="de build" id="build" aria-live="polite"></div>
+    <div class="bank" id="bank"></div>
     <button class="primary wide" data-check disabled>Zkontrolovat</button>`;
-  const ta = root.querySelector('textarea');
-  const check = root.querySelector('[data-check]');
-  ta.oninput = () => { check.disabled = !ta.value.trim(); };
-  root.querySelectorAll('.uml').forEach(b => {
-    b.onpointerdown = e => e.preventDefault(); // nezavírat klávesnici
-    b.onclick = () => {
-      const s = ta.selectionStart ?? ta.value.length, e = ta.selectionEnd ?? s;
-      ta.value = ta.value.slice(0, s) + b.dataset.c + ta.value.slice(e);
-      ta.selectionStart = ta.selectionEnd = s + 1; ta.focus(); ta.oninput();
-    };
-  });
+  const build = root.querySelector('#build'), bank = root.querySelector('#bank'), check = root.querySelector('[data-check]');
+  const draw = () => {
+    build.innerHTML = chosen.length
+      ? chosen.map(t => `<button class="tile" data-i="${t.i}">${esc(t.w)}</button>`).join('')
+      : '<span class="build-empty">Ťukej na slova dole</span>';
+    bank.innerHTML = tiles.map(t => `<button class="tile ${t.used ? 'ghost' : ''}" data-i="${t.i}" ${t.used ? 'disabled aria-hidden="true"' : ''}>${esc(t.w)}</button>`).join('');
+    check.disabled = !chosen.length;
+    bank.querySelectorAll('.tile:not(.ghost)').forEach(b => b.onclick = () => {
+      const t = tiles[+b.dataset.i]; t.used = true; chosen.push(t); draw();
+    });
+    build.querySelectorAll('.tile').forEach(b => b.onclick = () => {
+      const k = chosen.findIndex(t => t.i === +b.dataset.i);
+      chosen[k].used = false; chosen.splice(k, 1); draw();
+    });
+  };
+  tiles.forEach((t, i) => t.i = i);
+  draw();
   check.onclick = () => {
-    ta.blur();
-    const d = diffWords(item.de, ta.value);
-    ta.disabled = true; check.hidden = true;
-    root.querySelector('.umlauts').hidden = true;
-    ctx.onAnswer({ ok: d.perfect, given: ta.value, diff: d });
+    const given = chosen.map(t => t.w);
+    const ok = given.length === target.length && given.every((w, k) => w === target[k]);
+    root.querySelectorAll('.tile').forEach(b => b.disabled = true);
+    check.hidden = true;
+    const diff = diffWords(item.de, given.join(' '));
+    build.querySelectorAll('.tile').forEach((b, k) => b.classList.add(diff.okB[k] ? 'is-right' : 'is-wrong'));
+    ctx.onAnswer({ ok, given: given.join(' '), diff });
   };
 }
 
