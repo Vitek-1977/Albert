@@ -198,7 +198,7 @@
 {"id": "sla-16", "type": "errorhunt", "de": "Ich habe gestern mit Herr Weber telefoniert.", "error": "Herr", "fix": "Herrn", "tags": ["slaba"], "note": "Mit Herrn Weber."},
 {"id": "sla-17", "type": "errorhunt", "de": "Der Junge hat im Zoo einen Elefant gesehen.", "error": "Elefant", "fix": "Elefanten", "tags": ["slaba"], "note": "Der Elefant → einen Elefanten."},
 {"id": "sla-18", "type": "errorhunt", "de": "Die Meinung des Kollegen ist mir wichtig.", "error": null, "tags": ["slaba"], "note": "Správně – genitiv des Kollegen (bez -s)."},
-{"id": "sla-19", "type": "pair", "a": "Ich habe den Patient besucht.", "b": "Ich habe den Patienten besucht.", "q": "Kterou větu slyšíš správně?", "answer": "b", "tags": ["slaba"], "note": "Den Patienten."},
+{"id": "sla-19", "type": "pair", "a": "Ich habe den Patient besucht.", "b": "Ich habe den Patienten besucht.", "q": "Která věta je správně?", "answer": "b", "tags": ["slaba"], "note": "Den Patienten."},
 {"id": "sla-20", "type": "dictation", "de": "Ich habe dem Kollegen gesagt, dass der Kunde morgen kommt.", "tags": ["slaba"], "note": "Dem Kollegen (dativ), der Kunde (nominativ).", "distractors": ["Kollege", "Kunden"]},
 {"id": "sla-21", "type": "dictation", "de": "Kennst du den Namen des neuen Studenten?", "tags": ["slaba"], "note": "Den Namen, des Studenten.", "distractors": ["Name", "Student"]},
 {"id": "sla-22", "type": "dictation", "de": "Hast du schon mit dem neuen Kollegen gesprochen?", "tags": ["slaba"], "note": "Dem neuen Kollegen – slabé podstatné jméno.", "distractors": ["Kollege", "neue"]},
