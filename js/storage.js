@@ -8,7 +8,7 @@ const DEFAULTS = () => ({
   xp: 0,
   lessons: 0,
   flags: [],          // nahlášené chyby ve větách
-  settings: { rate: 1, goal: 60 },
+  settings: { rate: 1, goal: 60, silent: false },
 });
 
 let state;

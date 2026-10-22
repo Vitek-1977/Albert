@@ -13,7 +13,7 @@ export const spoken = item => {
 };
 
 export const TYPE_LABEL = {
-  gap: 'Poslouchej a doplň',
+  gap: 'Doplň slovo',
   errorhunt: 'Najdi chybu',
   pair: 'Dvě věty',
   dictation: 'Poskládej větu',
@@ -28,7 +28,7 @@ function gap(item, root, ctx) {
   const [before, rest] = item.de.split('{');
   const [answer, after] = rest.split('}');
   root.innerHTML = `
-    <div class="listen-row">${playBtn()}<span class="hint">Poslouchej a doplň, co slyšíš.</span></div>
+    <p class="hint lead">Doplň chybějící slovo.</p>
     <p class="de sentence">${esc(before)}<span class="blank" id="blank">&nbsp;</span>${esc(after)}</p>
     <div class="options">${shuffle(item.options).map(o => `<button class="opt" data-o="${esc(o)}">${esc(o)}</button>`).join('')}</div>`;
   root.querySelectorAll('.opt').forEach(b => b.onclick = () => {
@@ -91,10 +91,11 @@ function pair(item, root, ctx) {
       <div class="pair-card" data-k="${k}">
         <button class="play small" data-play-one="${k}" aria-label="Přehrát ${k.toUpperCase()}"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M8 5v14l11-7z" fill="currentColor"/></svg></button>
         <span class="pair-label">${k.toUpperCase()}</span>
-        <span class="de pair-text" hidden>${esc(item[k])}</span>
+        <span class="de pair-text" ${ctx.silent ? '' : 'hidden'}>${esc(item[k])}</span>
       </div>`).join('')}
     </div>
     <div class="options two">${['a', 'b'].map(k => `<button class="opt" data-o="${k}">${k.toUpperCase()}</button>`).join('')}</div>`;
+  if (ctx.silent) root.querySelectorAll('[data-play-one]').forEach(b => b.hidden = true);
   root.querySelectorAll('[data-play-one]').forEach(b => b.onclick = () => ctx.play([{ text: item[b.dataset.playOne], tag: b.dataset.playOne }]));
   root.querySelectorAll('.opt').forEach(b => b.onclick = () => {
     const ok = b.dataset.o === item.answer;

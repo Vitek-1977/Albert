@@ -38,10 +38,11 @@ function weightedPick(list, weightFn, n) {
   return pool.slice(0, n).map(p => p.x);
 }
 
-export function buildLesson(items, { focus = null } = {}) {
+export function buildLesson(items, { focus = null, silent = false } = {}) {
   const s = get();
   const now = Date.now();
-  const pool = focus ? items.filter(i => i.tags.includes(focus)) : items;
+  let pool = focus ? items.filter(i => i.tags.includes(focus)) : items;
+  if (silent) pool = pool.filter(i => i.type !== 'dictation'); // skládání věty bez zvuku nejde
   const due = pool.filter(i => s.items[i.id] && s.items[i.id].due <= now);
   const fresh = pool.filter(i => !s.items[i.id]);
 
@@ -64,7 +65,7 @@ export function buildLesson(items, { focus = null } = {}) {
       .sort((a, b) => s.items[a.id].due - s.items[b.id].due);
     picked.push(...rest.slice(0, LESSON_SIZE - picked.length));
   }
-  // nejvýš dva diktáty
+  // nejvýš tři skládání věty
   let dict = 0;
   picked = picked.filter(i => i.type !== 'dictation' || ++dict <= MAX_DICTATION);
   if (picked.length < LESSON_SIZE) {

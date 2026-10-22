@@ -8,6 +8,8 @@ const $ = s => document.querySelector(s);
 const app = $('#app');
 const pick = a => a[Math.floor(Math.random() * a.length)];
 const RATES = [0.8, 1, 1.25];
+const SPK_ON = '<svg viewBox="0 0 24 24" width="22" height="22"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>';
+const SPK_OFF = '<svg viewBox="0 0 24 24" width="22" height="22"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16.5 9.5l5 5M21.5 9.5l-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
 
 let ITEMS = [], A = {};
 
@@ -75,6 +77,10 @@ function home() {
       Začít lekci
       <small>${LESSON_SIZE} úloh, ${due ? `${due} k opakování` : 'nové věty'}</small>
     </button>
+    <div class="seg sound" id="sound" role="group" aria-label="Zvuk">
+      <button data-v="0" class="${s.settings.silent ? '' : 'on'}">${SPK_ON} Se zvukem</button>
+      <button data-v="1" class="${s.settings.silent ? 'on' : ''}">${SPK_OFF} Potichu</button>
+    </div>
 
     <section class="cats">
       <h2>Kde to skřípe</h2>
@@ -90,6 +96,10 @@ function home() {
     </section>
   </main>`;
   $('#start').onclick = () => startLesson();
+  app.querySelectorAll('#sound button').forEach(b => b.onclick = () => {
+    s.settings.silent = b.dataset.v === '1'; store.save();
+    app.querySelectorAll('#sound button').forEach(x => x.classList.toggle('on', x === b));
+  });
   $('#settings').onclick = settings;
   app.querySelectorAll('.cat').forEach(b => b.onclick = () => startLesson(b.dataset.t));
   window.scrollTo(0, 0);
@@ -99,13 +109,14 @@ function home() {
 let L = null;
 
 function startLesson(focus = null) {
-  const tasks = buildLesson(ITEMS, { focus });
+  const tasks = buildLesson(ITEMS, { focus, silent: store.get().settings.silent });
   if (!tasks.length) { alertAlbert(pick(A.empty)); return; }
   L = { focus, queue: tasks.map(it => ({ it, retry: false })), idx: 0, total: tasks.length, right: 0, firstTry: 0, xp: 0, missed: [] };
   app.innerHTML = `
   <header class="lesson-top">
     <button class="icon-btn" id="quit" aria-label="Ukončit lekci"><svg viewBox="0 0 24 24" width="24" height="24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
     <div class="bar lesson-bar"><span id="prog"></span></div>
+    <button class="icon-btn" id="mute"></button>
     <button class="rate" id="rate"></button>
   </header>
   <main class="lesson">
@@ -123,11 +134,33 @@ function startLesson(focus = null) {
     s.rate = RATES[(RATES.indexOf(s.rate) + 1) % RATES.length];
     audio.setRate(s.rate); store.save(); showRate();
   };
+  const muteBtn = $('#mute');
+  const showMute = () => {
+    const sil = store.get().settings.silent;
+    muteBtn.innerHTML = sil ? SPK_OFF : SPK_ON;
+    muteBtn.setAttribute('aria-label', sil ? 'Zapnout zvuk' : 'Ztlumit (tichý režim)');
+    rateBtn.hidden = sil;
+  };
+  showMute();
+  muteBtn.onclick = () => {
+    const s = store.get().settings;
+    s.silent = !s.silent; store.save(); showMute();
+    if (s.silent) audio.stop();
+    if (!L.answered) showTask(); // úlohu překreslit pro nový režim
+  };
   $('#intro').innerHTML = `${avatar('neutral', 44)}<p>${esc(focus ? A.categories[focus].intro : pick(A.lessonStart))}</p>`;
   showTask();
 }
 
 function showTask() {
+  const silent = store.get().settings.silent;
+  // potichu přeskočit skládání věty, které bez poslechu nedává smysl
+  while (silent && L.queue[L.idx] && L.queue[L.idx].it.type === 'dictation') {
+    if (!L.queue[L.idx].retry) L.total--;
+    L.queue.splice(L.idx, 1);
+  }
+  if (L.idx >= L.queue.length) { finish(); return; }
+  L.answered = false;
   const { it, retry } = L.queue[L.idx];
   $('#prog').style.width = `${Math.round(L.idx / L.queue.length * 100)}%`;
   $('#tlabel').textContent = retry ? 'Ještě jednou' : TYPE_LABEL[it.type];
@@ -136,7 +169,8 @@ function showTask() {
   const root = $('#task');
   root.className = `task t-${it.type}`;
   const ctx = {
-    play: (texts) => audio.play(texts || spoken(it)),
+    silent,
+    play: (texts) => { if (!store.get().settings.silent) audio.play(texts || spoken(it)); },
     onAnswer: res => answer(it, retry, res),
   };
   RENDER[it.type](it, root, ctx);
@@ -145,10 +179,11 @@ function showTask() {
     root.querySelectorAll('[data-play]').forEach(b => b.classList.toggle('playing', on));
     root.querySelectorAll('.pair-card').forEach(c => c.classList.toggle('playing', on && c.dataset.k === tag));
   });
-  if (it.type !== 'gender' && it.type !== 'errorhunt') ctx.play();
+  if (it.type === 'pair' || it.type === 'dictation') ctx.play();
 }
 
 function answer(it, retry, res) {
+  L.answered = true;
   if (!retry) {
     grade(it, res.ok);
     if (res.ok) { L.right++; L.firstTry++; L.xp += 10; }
@@ -168,7 +203,7 @@ function answer(it, retry, res) {
     </div>`;
   sheet.hidden = false;
   requestAnimationFrame(() => sheet.classList.add('up'));
-  if (it.type === 'errorhunt') $('#again').hidden = true;
+  if (it.type === 'errorhunt' || store.get().settings.silent) $('#again').hidden = true;
   $('#again').onclick = () => audio.play(it.type === 'pair' ? [it[it.answer]] : spoken(it).filter(t => typeof t === 'string'));
   $('#flag').onclick = () => flagItem(it);
   $('#next').onclick = () => {
@@ -186,7 +221,7 @@ function finish() {
   store.addXP(L.xp);
   s.lessons++;
   store.save();
-  const pct = L.firstTry / L.total;
+  const pct = L.firstTry / Math.max(1, L.total);
   const tier = pct >= 0.9 ? 'great' : pct >= 0.65 ? 'good' : 'meh';
   const missedCats = [...new Set(L.missed.map(mainTag))];
   const st = store.streak();

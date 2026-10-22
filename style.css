@@ -104,6 +104,10 @@ button:focus-visible, textarea:focus-visible { outline: 3px solid var(--ink-blue
 .row > * { flex: 1; text-align: center; }
 label.file { display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
 
+.seg.sound { margin-top: 12px; }
+.seg.sound button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.lesson-top #mute { flex: none; }
+
 /* ---------- kategorie ---------- */
 .cats { margin-top: 30px; }
 h2 { font-family: var(--serif); font-weight: 600; font-size: 21px; margin: 0 0 4px; }
