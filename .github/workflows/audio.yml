@@ -1,0 +1,49 @@
+name: Nahrávky
+# Přegeneruje MP3 pro věty z data/items.json (jen chybějící) a nasadí aplikaci.
+# Spouští se ručně: Actions → Nahrávky → Run workflow.
+on:
+  workflow_dispatch:
+    inputs:
+      voices:
+        description: Hlasy Piper (oddělené mezerou)
+        default: thorsten-high
+permissions:
+  contents: write
+  actions: write
+concurrency:
+  group: audio
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Piper a ffmpeg
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+          pip install -q piper-tts
+      - name: Stažení hlasů
+        run: |
+          mkdir -p voices
+          for v in ${{ inputs.voices }}; do
+            name=${v%-*}; quality=${v##*-}
+            base=https://huggingface.co/rhasspy/piper-voices/resolve/main/de/de_DE/$name/$quality/de_DE-$v
+            curl -sSfL -o voices/de_DE-$v.onnx $base.onnx
+            curl -sSfL -o voices/de_DE-$v.onnx.json $base.onnx.json
+          done
+          ls -la voices
+      - name: Generování
+        run: python3 tools/gen_audio.py --voices voices --names ${{ inputs.voices }}
+      - name: Uložení do repa a nasazení
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A audio
+          if git diff --cached --quiet; then echo "Žádné změny"; exit 0; fi
+          git commit -m "Nahrávky: ${{ inputs.voices }}"
+          git push
+          gh workflow run deploy.yml --ref main

@@ -3,10 +3,11 @@
 
 Použití:
   pip install piper-tts        (+ ffmpeg v systému)
-  python3 tools/gen_audio.py --voices /cesta/k/hlasum
+  python3 tools/gen_audio.py --voices /cesta/k/hlasum --names thorsten-high
 
-Hlasy (Piper v0.0.2, *-low): https://github.com/rhasspy/piper/releases/tag/v0.0.2
-  voice-de-thorsten-low, voice-de-karlsson-low, voice-de-kerstin-low, voice-de-ramona-low
+Hlasy: https://huggingface.co/rhasspy/piper-voices/tree/main/de/de_DE
+  (soubor de_DE-<jméno>.onnx + .onnx.json; starší de-<jméno>.onnx z Piper v0.0.2 fungují taky)
+Bez --names se použije DEFAULT_VOICES. Generuje to i workflow „Nahrávky“ na GitHubu.
 
 Generuje jen chybějící soubory (název = hash textu + hlasu), staré nepoužité smaže
 a zapíše audio/manifest.json  { "text": "soubor.mp3" }.
@@ -15,7 +16,8 @@ import argparse, hashlib, json, subprocess, sys, wave
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-VOICES = ["thorsten", "karlsson", "kerstin", "ramona"]
+DEFAULT_VOICES = ["thorsten-high"]
+VOICES = DEFAULT_VOICES
 
 
 def texts_for(item):
@@ -33,8 +35,17 @@ def pick_voice(key):
     return VOICES[h % len(VOICES)]
 
 
-def fix_phonemes(sentences):
-    # starší modely znají „ç“ jako jeden znak, novější espeak vrací c + kombinující cedilu
+def model_path(d, name):
+    for cand in (f"de_DE-{name}.onnx", f"de-{name}.onnx"):
+        if (Path(d) / cand).exists():
+            return Path(d) / cand
+    raise SystemExit(f"Hlas {name} nenalezen v {d}")
+
+
+def fix_phonemes(sentences, id_map=None):
+    # modely znají „ç“ jako jeden znak, novější espeak vrací c + kombinující cedilu
+    if id_map is not None and "\u0327" in id_map:
+        return sentences
     out = []
     for ph in sentences:
         fixed = []
@@ -50,9 +61,9 @@ def fix_phonemes(sentences):
 def synth(voice, text, wav_path):
     import numpy as np
     from piper import SynthesisConfig
-    cfg = SynthesisConfig(length_scale=1.08, noise_scale=0.5, noise_w_scale=0.6)
+    cfg = SynthesisConfig(length_scale=1.05, noise_scale=0.5, noise_w_scale=0.6)
     chunks = []
-    for ph in fix_phonemes(voice.phonemize(text)):
+    for ph in fix_phonemes(voice.phonemize(text), voice.config.phoneme_id_map):
         if not ph:
             continue
         audio = voice.phoneme_ids_to_audio(voice.phonemes_to_ids(ph), cfg)
@@ -70,8 +81,12 @@ def synth(voice, text, wav_path):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--voices", required=True, help="adresář s de-<hlas>-low.onnx")
+    ap.add_argument("--names", nargs="+", help="hlasy, mezi kterými se střídá (např. thorsten-high)")
     ap.add_argument("--keep", action="store_true", help="nemazat nepoužité soubory")
     a = ap.parse_args()
+    global VOICES
+    if a.names:
+        VOICES = a.names
 
     items = json.loads((ROOT / "data/items.json").read_text())["items"]
     audio_dir = ROOT / "audio"; audio_dir.mkdir(exist_ok=True)
@@ -89,11 +104,11 @@ def main():
     tmp = audio_dir / "_tmp.wav"
     for i, (text, name, v) in enumerate(todo, 1):
         if v not in loaded:
-            loaded[v] = PiperVoice.load(str(Path(a.voices) / f"de-{v}-low.onnx"))
+            loaded[v] = PiperVoice.load(str(model_path(a.voices, v)))
         synth(loaded[v], text, tmp)
         subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-i", str(tmp),
                         "-af", "silenceremove=start_periods=1:start_threshold=-50dB,loudnorm=I=-16:TP=-1.5",
-                        "-ar", "22050", "-ac", "1", "-b:a", "48k", str(audio_dir / name)], check=True)
+                        "-ar", "22050", "-ac", "1", "-b:a", "64k", str(audio_dir / name)], check=True)
         print(f"[{i}/{len(todo)}] {v}: {text}")
     tmp.unlink(missing_ok=True)
 

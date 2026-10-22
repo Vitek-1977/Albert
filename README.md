@@ -9,14 +9,16 @@ Poslechová cvičení z němčiny pro pokročilé. Zaměřuje se na rody, pády,
 
 ## Nahrávky
 
-Po úpravě vět je potřeba přegenerovat audio (generují se jen nové věty):
+Po úpravě vět je potřeba přegenerovat audio (generují se jen nové věty). Nejjednodušší je spustit workflow **Actions → Nahrávky → Run workflow**: stáhne hlas Piper (výchozí `thorsten-high`), vygeneruje chybějící MP3, uloží je do repa a znovu nasadí aplikaci.
+
+Lokálně:
 
 ```
 pip install piper-tts      # + ffmpeg
-python3 tools/gen_audio.py --voices /cesta/k/hlasum
+python3 tools/gen_audio.py --voices /cesta/k/hlasum --names thorsten-high
 ```
 
-Hlasy `de-{thorsten,karlsson,kerstin,ramona}-low.onnx` z https://github.com/rhasspy/piper/releases/tag/v0.0.2.
+Hlasy: https://huggingface.co/rhasspy/piper-voices/tree/main/de/de_DE
 
 ## Nasazení
 
