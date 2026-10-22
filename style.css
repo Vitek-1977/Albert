@@ -164,8 +164,9 @@ h2 { font-family: var(--serif); font-weight: 600; font-size: 21px; margin: 0 0 4
 .words { display: flex; flex-wrap: wrap; gap: 6px 4px; }
 .word { font: inherit; color: var(--ink-blue); background: var(--surface); border: 1.5px solid var(--line); border-radius: 8px; padding: 2px 8px; }
 .word:active:not(:disabled) { background: var(--line); }
-.word.is-error { border-color: var(--red-pen); color: var(--red-pen); text-decoration: line-through; text-decoration-thickness: 2px; }
-.word.is-wrong { background: var(--bad-bg); }
+/* skutečná chyba = to, na co se mělo ťuknout (zeleně jako správná odpověď); tvůj chybný tip = červeně */
+.word.is-error { border-color: var(--ok); background: var(--ok-bg); color: var(--ok); text-decoration: line-through; text-decoration-thickness: 2px; box-shadow: 0 3px 0 var(--ok); }
+.word.is-wrong { border-color: var(--red-pen); background: var(--bad-bg); color: var(--red-pen); box-shadow: 0 3px 0 var(--red-pen); }
 
 /* dvojice */
 .question { font-size: 19px; font-weight: 600; margin: 0 0 16px; }
