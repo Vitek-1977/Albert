@@ -227,7 +227,10 @@ export function feedbackHTML(item, res) {
       main = `<span class="g-text-${item.answer}">${item.answer}</span> ${esc(item.noun)} <span class="cz-inline">– ${esc(item.cz)}</span><br><span class="example">${esc(item.de)}</span>`;
       break;
     case 'errorhunt':
-      main = item.error
+      // „correct“ = celá opravená věta (když oprava mění víc než jedno slovo, např. pád)
+      main = item.error && item.correct
+        ? markWords(item.correct, diffWords(item.correct, item.de).okA)
+        : item.error
         ? item.de.split(' ').map(w => strip(w) === item.error
             ? `<del>${esc(item.error)}</del>${item.fix ? ` <mark>${esc(item.fix)}</mark>` : ''}${esc(w.slice(w.indexOf(item.error) + item.error.length))}`
             : esc(w)).join(' ')
